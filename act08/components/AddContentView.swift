@@ -68,5 +68,3 @@ struct AddContentView: View {
         }
     }
 }
-
-extension ResourceType: CaseIterable { }

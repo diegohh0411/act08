@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ResourceType: String, Codable {
+enum ResourceType: String, Codable, CaseIterable {
     case video = "video"
     case article = "article"
     case podcast = "podcast"
