@@ -28,79 +28,108 @@ struct ContentDetailView: View {
         return hasName && hasDetails && hasUrl
     }
 
+    private var transcriptBinding: Binding<String> {
+        Binding(
+            get: { self.content.transcript ?? "" },
+            set: { self.content.transcript = $0.isEmpty ? nil : $0 }
+        )
+    }
+
     var body: some View {
         Form {
-            Section(header: Text("Content Details")) {
-                TextField("Name *", text: $content.name)
-                TextField("Details *", text: $content.details)
-                TextField("URL *", text: $content.url)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.URL)
-                Picker("Resource Type *", selection: $content.resourceType) {
-                    ForEach(ResourceType.allCases, id: \.self) { type in
-                        Text(type.rawValue.capitalized)
-                    }
-                }
-                TextField("Transcript (optional)", text: Binding(
-                    get: { self.content.transcript ?? "" },
-                    set: { self.content.transcript = $0.isEmpty ? nil : $0 }
-                ))
-                TextField("Course *", value: $content.course, format: .number)
-                    .keyboardType(.numberPad)
-                TextField("Level *", value: $content.level, format: .number)
-                    .keyboardType(.numberPad)
-                TextField("Lection *", value: $content.lection, format: .number)
-                    .keyboardType(.numberPad)
-                TextField("Resource *", value: $content.resource, format: .number)
-                    .keyboardType(.numberPad)
-            }
-
-            Section {
-                Text("* Required fields")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            Button("Save") {
-                Task {
-                    isLoading = true
-                    let success = await viewModel.updateContent(content: content)
-                    isLoading = false
-                    if success {
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                }
-            }
-            .disabled(isLoading || !isFormValid)
+            contentDetailsSection
+            requiredFieldsSection
+            saveButton
         }
         .navigationTitle("Edit Content")
         .disabled(isLoading)
-        .overlay(
-            Group {
-                if isLoading {
-                    ZStack {
-                        Color.black.opacity(0.4)
-                            .ignoresSafeArea()
-                        VStack(spacing: 20) {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                            Text("Updating content...")
-                                .foregroundColor(.primary)
-                                .font(.headline)
-                        }
-                        .padding(30)
-                        .background(Color(uiColor: .systemBackground))
-                        .cornerRadius(15)
-                        .shadow(radius: 10)
-                    }
-                }
-            }
-        )
+        .overlay(loadingOverlay)
         .alert("Error", isPresented: showAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+    }
+
+    private var contentDetailsSection: some View {
+        Section(header: Text("Content Details")) {
+            TextField("Name *", text: $content.name)
+            TextField("Details *", text: $content.details)
+            urlField
+            resourceTypePicker
+            TextField("Transcript (optional)", text: transcriptBinding)
+            courseFields
+        }
+    }
+
+    private var urlField: some View {
+        TextField("URL *", text: $content.url)
+            .textInputAutocapitalization(.never)
+            .keyboardType(.URL)
+    }
+
+    private var resourceTypePicker: some View {
+        Picker("Resource Type *", selection: $content.resourceType) {
+            ForEach(ResourceType.allCases, id: \.self) { type in
+                Text(type.rawValue.capitalized)
+            }
+        }
+    }
+
+    private var courseFields: some View {
+        Group {
+            TextField("Course *", value: $content.course, format: .number)
+                .keyboardType(.numberPad)
+            TextField("Level *", value: $content.level, format: .number)
+                .keyboardType(.numberPad)
+            TextField("Lection *", value: $content.lection, format: .number)
+                .keyboardType(.numberPad)
+            TextField("Resource *", value: $content.resource, format: .number)
+                .keyboardType(.numberPad)
+        }
+    }
+
+    private var requiredFieldsSection: some View {
+        Section {
+            Text("* Required fields")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+
+    private var saveButton: some View {
+        Button("Save") {
+            Task {
+                isLoading = true
+                let success = await viewModel.updateContent(content: content)
+                isLoading = false
+                if success {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
+        }
+        .disabled(isLoading || !isFormValid)
+    }
+
+    @ViewBuilder
+    private var loadingOverlay: some View {
+        if isLoading {
+            ZStack {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                    Text("Updating content...")
+                        .foregroundColor(.primary)
+                        .font(.headline)
+                }
+                .padding(30)
+                .background(Color(uiColor: .systemBackground))
+                .cornerRadius(15)
+                .shadow(radius: 10)
+            }
         }
     }
 }
