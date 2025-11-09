@@ -63,16 +63,30 @@ struct ContentDetailView: View {
                 }
             }
             .disabled(isLoading || !isFormValid)
-
-            if isLoading {
-                HStack {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                }
-            }
         }
         .navigationTitle("Edit Content")
+        .disabled(isLoading)
+        .overlay(
+            Group {
+                if isLoading {
+                    ZStack {
+                        Color.black.opacity(0.4)
+                            .ignoresSafeArea()
+                        VStack(spacing: 20) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            Text("Updating content...")
+                                .foregroundColor(.white)
+                                .font(.headline)
+                        }
+                        .padding(30)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(15)
+                    }
+                }
+            }
+        )
         .alert(item: Binding<String?>(
             get: { viewModel.errorMessage },
             set: { viewModel.errorMessage = $0 }

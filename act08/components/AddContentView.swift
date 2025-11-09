@@ -84,19 +84,33 @@ struct AddContentView: View {
                     }
                 }
                 .disabled(isLoading || !isFormValid)
-
-                if isLoading {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
-                }
             }
             .navigationTitle("Add Content")
             .navigationBarItems(leading: Button("Cancel") {
                 presentationMode.wrappedValue.dismiss()
             })
+            .disabled(isLoading)
+            .overlay(
+                Group {
+                    if isLoading {
+                        ZStack {
+                            Color.black.opacity(0.4)
+                                .ignoresSafeArea()
+                            VStack(spacing: 20) {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                Text("Creating content...")
+                                    .foregroundColor(.white)
+                                    .font(.headline)
+                            }
+                            .padding(30)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(15)
+                        }
+                    }
+                }
+            )
             .alert(item: Binding<String?>(
                 get: { viewModel.errorMessage },
                 set: { viewModel.errorMessage = $0 }
