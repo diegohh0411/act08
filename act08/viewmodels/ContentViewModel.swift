@@ -21,7 +21,8 @@ class ContentViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         do {
-            contents = try await repository.getAll()
+            let fetchedContents = try await repository.getAll()
+            contents = fetchedContents.sorted { $0.createdAt > $1.createdAt }
         } catch let apiError as ApiError {
             errorMessage = apiError.localizedDescription
         } catch {
@@ -61,7 +62,7 @@ class ContentViewModel: ObservableObject {
 
         do {
             let createdContent = try await repository.create(content: newContent)
-            contents.append(createdContent)
+            contents.insert(createdContent, at: 0)
             return true
         } catch let apiError as ApiError {
             errorMessage = apiError.localizedDescription

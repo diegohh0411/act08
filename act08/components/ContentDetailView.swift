@@ -75,14 +75,15 @@ struct ContentDetailView: View {
                         VStack(spacing: 20) {
                             ProgressView()
                                 .scaleEffect(1.5)
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
                             Text("Updating content...")
-                                .foregroundColor(.white)
+                                .foregroundColor(.primary)
                                 .font(.headline)
                         }
                         .padding(30)
-                        .background(Color(.systemGray6))
+                        .background(Color(.systemBackground))
                         .cornerRadius(15)
+                        .shadow(radius: 10)
                     }
                 }
             }
