@@ -51,15 +51,23 @@ struct ContentCreate: Codable {
     var name: String
     var details: String
     var url: String
-    var type: ResourceType
-    var transcript: String
+    var resourceType: ResourceType
+    var transcript: String?
+    var course: Int
+    var level: Int
+    var lection: Int
+    var resource: Int
 
     enum CodingKeys: String, CodingKey {
         case name
         case details
         case url
-        case type
+        case resourceType
         case transcript
+        case course
+        case level
+        case lection
+        case resource
     }
 }
 
@@ -67,14 +75,22 @@ struct ContentUpdate: Codable {
     var name: String?
     var details: String?
     var url: String?
-    var type: ResourceType?
+    var resourceType: ResourceType?
     var transcript: String?
+    var course: Int?
+    var level: Int?
+    var lection: Int?
+    var resource: Int?
 
     enum CodingKeys: String, CodingKey {
         case name
         case details
         case url
-        case type
+        case resourceType
         case transcript
+        case course
+        case level
+        case lection
+        case resource
     }
 }

@@ -16,6 +16,10 @@ struct AddContentView: View {
     @State private var url = ""
     @State private var resourceType: ResourceType = .video
     @State private var transcript = ""
+    @State private var course = ""
+    @State private var level = ""
+    @State private var lection = ""
+    @State private var resource = ""
     @State private var isLoading = false
 
     var body: some View {
@@ -30,7 +34,15 @@ struct AddContentView: View {
                             Text(type.rawValue.capitalized)
                         }
                     }
-                    TextField("Transcript", text: $transcript)
+                    TextField("Transcript (optional)", text: $transcript)
+                    TextField("Course", text: $course)
+                        .keyboardType(.numberPad)
+                    TextField("Level", text: $level)
+                        .keyboardType(.numberPad)
+                    TextField("Lection", text: $lection)
+                        .keyboardType(.numberPad)
+                    TextField("Resource", text: $resource)
+                        .keyboardType(.numberPad)
                 }
 
                 Button("Add") {
@@ -41,7 +53,11 @@ struct AddContentView: View {
                             details: details,
                             url: url,
                             resourceType: resourceType,
-                            transcript: transcript
+                            transcript: transcript.isEmpty ? nil : transcript,
+                            course: Int(course) ?? 0,
+                            level: Int(level) ?? 0,
+                            lection: Int(lection) ?? 0,
+                            resource: Int(resource) ?? 0
                         )
                         isLoading = false
                         if viewModel.errorMessage == nil {

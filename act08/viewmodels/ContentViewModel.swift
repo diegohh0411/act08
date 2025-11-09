@@ -30,8 +30,8 @@ class ContentViewModel: ObservableObject {
         isLoading = false
     }
 
-    func createContent(name: String, details: String, url: String, resourceType: ResourceType, transcript: String) async {
-        let newContent = ContentCreate(name: name, details: details, url: url, type: resourceType, transcript: transcript)
+    func createContent(name: String, details: String, url: String, resourceType: ResourceType, transcript: String?, course: Int, level: Int, lection: Int, resource: Int) async {
+        let newContent = ContentCreate(name: name, details: details, url: url, resourceType: resourceType, transcript: transcript, course: course, level: level, lection: lection, resource: resource)
         do {
             let createdContent = try await repository.create(content: newContent)
             contents.append(createdContent)
@@ -43,7 +43,7 @@ class ContentViewModel: ObservableObject {
     }
 
     func updateContent(content: Content) async {
-        let contentUpdate = ContentUpdate(name: content.name, details: content.details, url: content.url, type: content.resourceType, transcript: content.transcript)
+        let contentUpdate = ContentUpdate(name: content.name, details: content.details, url: content.url, resourceType: content.resourceType, transcript: content.transcript, course: content.course, level: content.level, lection: content.lection, resource: content.resource)
         do {
             let updatedContent = try await repository.update(id: content.id, content: contentUpdate)
             if let index = contents.firstIndex(where: { $0.id == content.id }) {
