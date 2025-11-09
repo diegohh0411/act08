@@ -49,24 +49,32 @@ struct Content: Codable, Identifiable {
 
 struct ContentCreate: Codable {
     var name: String
-    var details: String?
+    var details: String
     var url: String
-    var resourceType: ResourceType
-    var transcript: String?
-    var course: Int
-    var level: Int
-    var lection: Int
-    var resource: Int
+    var type: ResourceType
+    var transcript: String
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case details
+        case url
+        case type
+        case transcript
+    }
 }
 
 struct ContentUpdate: Codable {
     var name: String?
     var details: String?
     var url: String?
-    var resourceType: ResourceType?
+    var type: ResourceType?
     var transcript: String?
-    var course: Int?
-    var level: Int?
-    var lection: Int?
-    var resource: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case details
+        case url
+        case type
+        case transcript
+    }
 }
