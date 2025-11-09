@@ -11,6 +11,13 @@ struct ContentView: View {
     @StateObject private var viewModel = ContentViewModel()
     @State private var showingAddContent = false
 
+    private var showAlert: Binding<Bool> {
+        Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )
+    }
+
     var body: some View {
         NavigationView {
             List {
@@ -50,14 +57,10 @@ struct ContentView: View {
                     await viewModel.fetchContents()
                 }
             }
-            .alert(isPresented: .constant(viewModel.errorMessage != nil)) {
-                Alert(
-                    title: Text("Error"),
-                    message: Text(viewModel.errorMessage ?? ""),
-                    dismissButton: .default(Text("OK")) {
-                        viewModel.errorMessage = nil
-                    }
-                )
+            .alert("Error", isPresented: showAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.errorMessage ?? "")
             }
         }
     }
