@@ -30,13 +30,15 @@ struct AddContentView: View {
     }
 
     private var isFormValid: Bool {
-        !name.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !details.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !url.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !course.isEmpty &&
-        !level.isEmpty &&
-        !lection.isEmpty &&
-        !resource.isEmpty
+        let hasName = !name.trimmingCharacters(in: .whitespaces).isEmpty
+        let hasDetails = !details.trimmingCharacters(in: .whitespaces).isEmpty
+        let hasUrl = !url.trimmingCharacters(in: .whitespaces).isEmpty
+        let hasCourse = !course.isEmpty
+        let hasLevel = !level.isEmpty
+        let hasLection = !lection.isEmpty
+        let hasResource = !resource.isEmpty
+
+        return hasName && hasDetails && hasUrl && hasCourse && hasLevel && hasLection && hasResource
     }
 
     var body: some View {
@@ -46,7 +48,7 @@ struct AddContentView: View {
                     TextField("Name *", text: $name)
                     TextField("Details *", text: $details)
                     TextField("URL *", text: $url)
-                        .autocapitalization(.none)
+                        .textInputAutocapitalization(.never)
                         .keyboardType(.URL)
                     Picker("Resource Type *", selection: $resourceType) {
                         ForEach(ResourceType.allCases, id: \.self) { type in
@@ -112,7 +114,7 @@ struct AddContentView: View {
                                     .font(.headline)
                             }
                             .padding(30)
-                            .background(Color(.systemBackground))
+                            .background(Color(uiColor: .systemBackground))
                             .cornerRadius(15)
                             .shadow(radius: 10)
                         }
