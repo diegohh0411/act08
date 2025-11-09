@@ -119,15 +119,10 @@ struct AddContentView: View {
                     }
                 }
             )
-            .alert(item: Binding<String?>(
-                get: { viewModel.errorMessage },
-                set: { viewModel.errorMessage = $0 }
-            )) { error in
-                Alert(
-                    title: Text("Error"),
-                    message: Text(error),
-                    dismissButton: .default(Text("OK"))
-                )
+            .alert("Error", isPresented: showAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.errorMessage ?? "")
             }
         }
     }
