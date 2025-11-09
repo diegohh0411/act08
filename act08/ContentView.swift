@@ -6,87 +6,65 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var context
-    private var repo: TransactionRepository {
-        TransactionRepository(context: context)
-    }
-    
-    @State
-    private var showModelError = false
-    
-    @Query(
-        filter: #Predicate<Transaction> { tx in tx.deletedAt == nil },
-        sort: \Transaction.date,
-        order: .reverse
-    ) private var txs: [Transaction]
+    @StateObject private var viewModel = ContentViewModel()
+    @State private var showingAddContent = false
 
     var body: some View {
-        NavigationSplitView {
+        NavigationView {
             List {
-                ForEach(txs) { tx in
-                    NavigationLink {
-                        TransactionDetailView(transaction: tx)
-                    } label: {
-                        HStack {
-                            Text(tx.date.formatted(date: .abbreviated, time: .omitted))
-                            Text(tx.concept ?? "Sin concepto")
-                            Text(tx.formattedAmount())
+                ForEach(viewModel.contents) { content in
+                    NavigationLink(destination: ContentDetailView(content: content, viewModel: viewModel)) {
+                        VStack(alignment: .leading) {
+                            Text(content.name)
+                                .font(.headline)
+                            Text(content.details ?? "No details")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         }
                     }
                 }
-                .onDelete(perform: deleteItems)
+                .onDelete(perform: viewModel.deleteContent)
             }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
+            .navigationTitle("Content")
             .toolbar {
-#if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                    Button(action: {
+                        showingAddContent = true
+                    }) {
+                        Image(systemName: "plus")
                     }
                 }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    EditButton()
+                }
             }
-        } detail: {
-            Text("Select an item")
-        }
-        .alert("Oh oh", isPresented: $showModelError) {
-            Button("OK", role: .cancel) { }
-            Button("Retry") { }
-        } message: {
-            Text("Tuvimos un error al guardar tu transacción")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let _ = repo.create()
-            do {
-                try repo.save()
-            } catch {
-                showModelError = true
+            .sheet(isPresented: $showingAddContent) {
+                AddContentView(viewModel: viewModel)
             }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                repo.delete(txs[index])
+            .onAppear {
+                Task {
+                    await viewModel.fetchContents()
+                }
             }
-            try? repo.save()
+            .alert(item: $viewModel.errorMessage) { error in
+                Alert(
+                    title: Text("Error"),
+                    message: Text(error),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
     }
 }
 
-#Preview {
-    ContentView()
-        .modelContainer(for: Transaction.self, inMemory: true)
+extension String: Identifiable {
+    public var id: String { self }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
