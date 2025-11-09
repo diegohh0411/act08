@@ -22,33 +22,51 @@ struct AddContentView: View {
     @State private var resource = ""
     @State private var isLoading = false
 
+    private var isFormValid: Bool {
+        !name.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !details.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !url.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !course.isEmpty &&
+        !level.isEmpty &&
+        !lection.isEmpty &&
+        !resource.isEmpty
+    }
+
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("New Content")) {
-                    TextField("Name", text: $name)
-                    TextField("Details", text: $details)
-                    TextField("URL", text: $url)
-                    Picker("Resource Type", selection: $resourceType) {
+                    TextField("Name *", text: $name)
+                    TextField("Details *", text: $details)
+                    TextField("URL *", text: $url)
+                        .autocapitalization(.none)
+                        .keyboardType(.URL)
+                    Picker("Resource Type *", selection: $resourceType) {
                         ForEach(ResourceType.allCases, id: \.self) { type in
                             Text(type.rawValue.capitalized)
                         }
                     }
                     TextField("Transcript (optional)", text: $transcript)
-                    TextField("Course", text: $course)
+                    TextField("Course *", text: $course)
                         .keyboardType(.numberPad)
-                    TextField("Level", text: $level)
+                    TextField("Level *", text: $level)
                         .keyboardType(.numberPad)
-                    TextField("Lection", text: $lection)
+                    TextField("Lection *", text: $lection)
                         .keyboardType(.numberPad)
-                    TextField("Resource", text: $resource)
+                    TextField("Resource *", text: $resource)
                         .keyboardType(.numberPad)
+                }
+
+                Section {
+                    Text("* Required fields")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
 
                 Button("Add") {
                     Task {
                         isLoading = true
-                        await viewModel.createContent(
+                        let success = await viewModel.createContent(
                             name: name,
                             details: details,
                             url: url,
@@ -60,12 +78,12 @@ struct AddContentView: View {
                             resource: Int(resource) ?? 0
                         )
                         isLoading = false
-                        if viewModel.errorMessage == nil {
+                        if success {
                             presentationMode.wrappedValue.dismiss()
                         }
                     }
                 }
-                .disabled(isLoading)
+                .disabled(isLoading || !isFormValid)
 
                 if isLoading {
                     HStack {

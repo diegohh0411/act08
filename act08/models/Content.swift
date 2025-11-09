@@ -18,7 +18,7 @@ struct Content: Codable, Identifiable {
     var id: Int { content_id }
     let content_id: Int
     var name: String
-    var details: String?
+    var details: String
     var url: String
     var resourceType: ResourceType
     var transcript: String?
