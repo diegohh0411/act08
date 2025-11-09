@@ -45,15 +45,11 @@ enum ApiError: Error {
 class ContentRepository {
 
     private var jsonDecoder: JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return decoder
+        ISO8601DateCoder.decoder()
     }
 
     private var jsonEncoder: JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        return encoder
+        ISO8601DateCoder.encoder()
     }
 
     func getAll() async throws -> [Content] {

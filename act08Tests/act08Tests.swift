@@ -30,8 +30,7 @@ struct act08Tests {
         }
         """
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+    let decoder = ISO8601DateCoder.decoder()
         let data = json.data(using: .utf8)!
         let content = try decoder.decode(Content.self, from: data)
 
@@ -55,8 +54,7 @@ struct act08Tests {
             resource: 20
         )
 
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
+    let encoder = ISO8601DateCoder.encoder()
         let data = try encoder.encode(contentCreate)
         let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
 
@@ -154,9 +152,9 @@ struct act08Tests {
     }
 
     @Test func testContentSorting() async throws {
-        let dateFormatter = ISO8601DateFormatter()
-        let oldDate = dateFormatter.date(from: "2025-01-01T12:00:00.000Z")!
-        let newDate = dateFormatter.date(from: "2025-11-08T12:00:00.000Z")!
+    let dateFormatter = ISO8601DateCoder.formatter
+    let oldDate = dateFormatter.date(from: "2025-01-01T12:00:00.000Z")!
+    let newDate = dateFormatter.date(from: "2025-11-08T12:00:00.000Z")!
 
         let oldContent = Content(
             content_id: 1,
