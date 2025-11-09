@@ -11,6 +11,7 @@ struct ContentDetailView: View {
     @State var content: Content
     @ObservedObject var viewModel: ContentViewModel
     @Environment(\.presentationMode) var presentationMode
+    @State private var isLoading = false
 
     var body: some View {
         Form {
@@ -42,11 +43,34 @@ struct ContentDetailView: View {
 
             Button("Save") {
                 Task {
+                    isLoading = true
                     await viewModel.updateContent(content: content)
-                    presentationMode.wrappedValue.dismiss()
+                    isLoading = false
+                    if viewModel.errorMessage == nil {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
+            .disabled(isLoading)
+
+            if isLoading {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
                 }
             }
         }
         .navigationTitle("Edit Content")
+        .alert(item: Binding<String?>(
+            get: { viewModel.errorMessage },
+            set: { viewModel.errorMessage = $0 }
+        )) { error in
+            Alert(
+                title: Text("Error"),
+                message: Text(error),
+                dismissButton: .default(Text("OK"))
+            )
+        }
     }
 }

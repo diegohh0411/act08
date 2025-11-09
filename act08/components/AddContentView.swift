@@ -20,6 +20,7 @@ struct AddContentView: View {
     @State private var level = ""
     @State private var lection = ""
     @State private var resource = ""
+    @State private var isLoading = false
 
     var body: some View {
         NavigationView {
@@ -46,6 +47,7 @@ struct AddContentView: View {
 
                 Button("Add") {
                     Task {
+                        isLoading = true
                         await viewModel.createContent(
                             name: name,
                             details: details,
@@ -57,7 +59,19 @@ struct AddContentView: View {
                             lection: Int(lection) ?? 0,
                             resource: Int(resource) ?? 0
                         )
-                        presentationMode.wrappedValue.dismiss()
+                        isLoading = false
+                        if viewModel.errorMessage == nil {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    }
+                }
+                .disabled(isLoading)
+
+                if isLoading {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
                     }
                 }
             }
@@ -65,6 +79,16 @@ struct AddContentView: View {
             .navigationBarItems(leading: Button("Cancel") {
                 presentationMode.wrappedValue.dismiss()
             })
+            .alert(item: Binding<String?>(
+                get: { viewModel.errorMessage },
+                set: { viewModel.errorMessage = $0 }
+            )) { error in
+                Alert(
+                    title: Text("Error"),
+                    message: Text(error),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
     }
 }
