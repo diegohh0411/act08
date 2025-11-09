@@ -17,6 +17,18 @@ enum ApiError: Error {
 
 class ContentRepository {
 
+    private var jsonDecoder: JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }
+
+    private var jsonEncoder: JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        return encoder
+    }
+
     func getAll() async throws -> [Content] {
         guard let url = URL(string: "\(ApiConfig.baseUrl)/content") else {
             throw ApiError.invalidURL
@@ -32,14 +44,14 @@ class ContentRepository {
         }
 
         do {
-            let contents = try JSONDecoder().decode([Content].self, from: data)
+            let contents = try jsonDecoder.decode([Content].self, from: data)
             return contents
         } catch {
             throw ApiError.decodingError(error.localizedDescription)
         }
     }
 
-    func create(content: Content) async throws -> Content {
+    func create(content: ContentCreate) async throws -> Content {
         guard let url = URL(string: "\(ApiConfig.baseUrl)/content") else {
             throw ApiError.invalidURL
         }
@@ -49,7 +61,7 @@ class ContentRepository {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
         do {
-            let jsonData = try JSONEncoder().encode(content)
+            let jsonData = try jsonEncoder.encode(content)
             request.httpBody = jsonData
         } catch {
             throw ApiError.encodingError(error.localizedDescription)
@@ -62,7 +74,7 @@ class ContentRepository {
         }
 
         do {
-            let createdContent = try JSONDecoder().decode(Content.self, from: data)
+            let createdContent = try jsonDecoder.decode(Content.self, from: data)
             return createdContent
         } catch {
             throw ApiError.decodingError(error.localizedDescription)

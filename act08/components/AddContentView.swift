@@ -14,8 +14,12 @@ struct AddContentView: View {
     @State private var name = ""
     @State private var details = ""
     @State private var url = ""
-    @State private var resourceType = ""
+    @State private var resourceType: ResourceType = .video
     @State private var transcript = ""
+    @State private var course = ""
+    @State private var level = ""
+    @State private var lection = ""
+    @State private var resource = ""
 
     var body: some View {
         NavigationView {
@@ -24,13 +28,35 @@ struct AddContentView: View {
                     TextField("Name", text: $name)
                     TextField("Details", text: $details)
                     TextField("URL", text: $url)
-                    TextField("Resource Type", text: $resourceType)
+                    Picker("Resource Type", selection: $resourceType) {
+                        ForEach(ResourceType.allCases, id: \.self) { type in
+                            Text(type.rawValue.capitalized)
+                        }
+                    }
                     TextField("Transcript", text: $transcript)
+                    TextField("Course", text: $course)
+                        .keyboardType(.numberPad)
+                    TextField("Level", text: $level)
+                        .keyboardType(.numberPad)
+                    TextField("Lection", text: $lection)
+                        .keyboardType(.numberPad)
+                    TextField("Resource", text: $resource)
+                        .keyboardType(.numberPad)
                 }
 
                 Button("Add") {
                     Task {
-                        await viewModel.createContent(name: name, details: details, url: url, resourceType: resourceType, transcript: transcript)
+                        await viewModel.createContent(
+                            name: name,
+                            details: details,
+                            url: url,
+                            resourceType: resourceType,
+                            transcript: transcript,
+                            course: Int(course) ?? 0,
+                            level: Int(level) ?? 0,
+                            lection: Int(lection) ?? 0,
+                            resource: Int(resource) ?? 0
+                        )
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
@@ -42,3 +68,5 @@ struct AddContentView: View {
         }
     }
 }
+
+extension ResourceType: CaseIterable { }
