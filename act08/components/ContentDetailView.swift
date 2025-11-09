@@ -21,9 +21,11 @@ struct ContentDetailView: View {
     }
 
     private var isFormValid: Bool {
-        !content.name.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !content.details.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !content.url.trimmingCharacters(in: .whitespaces).isEmpty
+        let hasName = !content.name.trimmingCharacters(in: .whitespaces).isEmpty
+        let hasDetails = !content.details.trimmingCharacters(in: .whitespaces).isEmpty
+        let hasUrl = !content.url.trimmingCharacters(in: .whitespaces).isEmpty
+
+        return hasName && hasDetails && hasUrl
     }
 
     var body: some View {
