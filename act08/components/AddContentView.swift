@@ -22,6 +22,13 @@ struct AddContentView: View {
     @State private var resource = ""
     @State private var isLoading = false
 
+    private var showAlert: Binding<Bool> {
+        Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )
+    }
+
     private var isFormValid: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty &&
         !details.trimmingCharacters(in: .whitespaces).isEmpty &&

@@ -13,6 +13,13 @@ struct ContentDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var isLoading = false
 
+    private var showAlert: Binding<Bool> {
+        Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )
+    }
+
     private var isFormValid: Bool {
         !content.name.trimmingCharacters(in: .whitespaces).isEmpty &&
         !content.details.trimmingCharacters(in: .whitespaces).isEmpty &&
@@ -88,15 +95,10 @@ struct ContentDetailView: View {
                 }
             }
         )
-        .alert(item: Binding<String?>(
-            get: { viewModel.errorMessage },
-            set: { viewModel.errorMessage = $0 }
-        )) { error in
-            Alert(
-                title: Text("Error"),
-                message: Text(error),
-                dismissButton: .default(Text("OK"))
-            )
+        .alert("Error", isPresented: showAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
     }
 }
