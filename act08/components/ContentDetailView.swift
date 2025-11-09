@@ -32,7 +32,7 @@ struct ContentDetailView: View {
                 TextField("Name *", text: $content.name)
                 TextField("Details *", text: $content.details)
                 TextField("URL *", text: $content.url)
-                    .autocapitalization(.none)
+                    .textInputAutocapitalization(.never)
                     .keyboardType(.URL)
                 Picker("Resource Type *", selection: $content.resourceType) {
                     ForEach(ResourceType.allCases, id: \.self) { type in
@@ -88,7 +88,7 @@ struct ContentDetailView: View {
                                 .font(.headline)
                         }
                         .padding(30)
-                        .background(Color(.systemBackground))
+                        .background(Color(uiColor: .systemBackground))
                         .cornerRadius(15)
                         .shadow(radius: 10)
                     }
