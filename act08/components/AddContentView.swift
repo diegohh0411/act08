@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct AddContentView: View {
     @ObservedObject var viewModel: ContentViewModel
@@ -41,29 +44,31 @@ struct AddContentView: View {
         return hasName && hasDetails && hasUrl && hasCourse && hasLevel && hasLection && hasResource
     }
 
+    private var overlayBackgroundColor: Color {
+#if os(iOS)
+        return Color(.systemBackground)
+#else
+        return Color(nsColor: .windowBackgroundColor)
+#endif
+    }
+
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("New Content")) {
                     TextField("Name *", text: $name)
                     TextField("Details *", text: $details)
-                    TextField("URL *", text: $url)
-                        .autocapitalization(.none)
-                        .keyboardType(.URL)
+                    urlField
                     Picker("Resource Type *", selection: $resourceType) {
                         ForEach(ResourceType.allCases, id: \.self) { type in
                             Text(type.rawValue.capitalized)
                         }
                     }
                     TextField("Transcript (optional)", text: $transcript)
-                    TextField("Course *", text: $course)
-                        .keyboardType(.numberPad)
-                    TextField("Level *", text: $level)
-                        .keyboardType(.numberPad)
-                    TextField("Lection *", text: $lection)
-                        .keyboardType(.numberPad)
-                    TextField("Resource *", text: $resource)
-                        .keyboardType(.numberPad)
+                    numericTextField(title: "Course *", text: $course)
+                    numericTextField(title: "Level *", text: $level)
+                    numericTextField(title: "Lection *", text: $lection)
+                    numericTextField(title: "Resource *", text: $resource)
                 }
 
                 Section {
@@ -75,16 +80,22 @@ struct AddContentView: View {
                 Button("Add") {
                     Task {
                         isLoading = true
+                        let courseValue = Int(course) ?? 0
+                        let levelValue = Int(level) ?? 0
+                        let lectionValue = Int(lection) ?? 0
+                        let resourceValue = Int(resource) ?? 0
+                        let transcriptValue = transcript.isEmpty ? nil : transcript
+
                         let success = await viewModel.createContent(
                             name: name,
                             details: details,
                             url: url,
                             resourceType: resourceType,
-                            transcript: transcript.isEmpty ? nil : transcript,
-                            course: Int(course) ?? 0,
-                            level: Int(level) ?? 0,
-                            lection: Int(lection) ?? 0,
-                            resource: Int(resource) ?? 0
+                            transcript: transcriptValue,
+                            course: courseValue,
+                            level: levelValue,
+                            lection: lectionValue,
+                            resource: resourceValue
                         )
                         isLoading = false
                         if success {
@@ -95,9 +106,11 @@ struct AddContentView: View {
                 .disabled(isLoading || !isFormValid)
             }
             .navigationTitle("Add Content")
+            #if os(iOS)
             .navigationBarItems(leading: Button("Cancel") {
                 presentationMode.wrappedValue.dismiss()
             })
+            #endif
             .disabled(isLoading)
             .overlay(
                 Group {
@@ -114,7 +127,7 @@ struct AddContentView: View {
                                     .font(.headline)
                             }
                             .padding(30)
-                            .background(Color(uiColor: .systemBackground))
+                            .background(overlayBackgroundColor)
                             .cornerRadius(15)
                             .shadow(radius: 10)
                         }
@@ -127,5 +140,26 @@ struct AddContentView: View {
                 Text(viewModel.errorMessage ?? "")
             }
         }
+    }
+
+    @ViewBuilder
+    private var urlField: some View {
+#if os(iOS)
+        TextField("URL *", text: $url)
+            .autocapitalization(.none)
+            .keyboardType(.URL)
+#else
+        TextField("URL *", text: $url)
+#endif
+    }
+
+    @ViewBuilder
+    private func numericTextField(title: String, text: Binding<String>) -> some View {
+#if os(iOS)
+        TextField(title, text: text)
+            .keyboardType(.numberPad)
+#else
+        TextField(title, text: text)
+#endif
     }
 }
