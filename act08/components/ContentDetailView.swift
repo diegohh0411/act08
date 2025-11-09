@@ -64,7 +64,7 @@ struct ContentDetailView: View {
 
     private var urlField: some View {
         TextField("URL *", text: $content.url)
-            .textInputAutocapitalization(.never)
+            .autocapitalization(.none)
             .keyboardType(.URL)
     }
 

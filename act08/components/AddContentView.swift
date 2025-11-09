@@ -48,7 +48,7 @@ struct AddContentView: View {
                     TextField("Name *", text: $name)
                     TextField("Details *", text: $details)
                     TextField("URL *", text: $url)
-                        .textInputAutocapitalization(.never)
+                        .autocapitalization(.none)
                         .keyboardType(.URL)
                     Picker("Resource Type *", selection: $resourceType) {
                         ForEach(ResourceType.allCases, id: \.self) { type in
