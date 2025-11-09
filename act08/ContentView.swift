@@ -19,7 +19,7 @@ struct ContentView: View {
                         VStack(alignment: .leading) {
                             Text(content.name)
                                 .font(.headline)
-                            Text(content.details ?? "No details")
+                            Text(content.details)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
