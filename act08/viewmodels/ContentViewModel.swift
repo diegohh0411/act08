@@ -22,8 +22,10 @@ class ContentViewModel: ObservableObject {
         errorMessage = nil
         do {
             contents = try await repository.getAll()
+        } catch let apiError as ApiError {
+            errorMessage = apiError.localizedDescription
         } catch {
-            errorMessage = "Error fetching content: \(error.localizedDescription)"
+            errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
         }
         isLoading = false
     }
@@ -33,20 +35,24 @@ class ContentViewModel: ObservableObject {
         do {
             let createdContent = try await repository.create(content: newContent)
             contents.append(createdContent)
+        } catch let apiError as ApiError {
+            errorMessage = apiError.localizedDescription
         } catch {
-            errorMessage = "Error creating content: \(error.localizedDescription)"
+            errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
         }
     }
 
     func updateContent(content: Content) async {
-        let contentUpdate = ContentUpdate(name: content.name, details: content.details, url: content.url, resourceType: content.resourceType, transcript: content.transcript)
+        let contentUpdate = ContentUpdate(name: content.name, details: content.details, url: content.url, resourceType: content.resourceType, transcript: content.transcript, course: content.course, level: content.level, lection: content.lection, resource: content.resource)
         do {
             let updatedContent = try await repository.update(id: content.id, content: contentUpdate)
             if let index = contents.firstIndex(where: { $0.id == content.id }) {
                 contents[index] = updatedContent
             }
+        } catch let apiError as ApiError {
+            errorMessage = apiError.localizedDescription
         } catch {
-            errorMessage = "Error updating content: \(error.localizedDescription)"
+            errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
         }
     }
 
@@ -57,8 +63,10 @@ class ContentViewModel: ObservableObject {
                 do {
                     try await repository.delete(id: id)
                     contents.removeAll { $0.id == id }
+                } catch let apiError as ApiError {
+                    errorMessage = apiError.localizedDescription
                 } catch {
-                    errorMessage = "Error deleting content with id \(id): \(error.localizedDescription)"
+                    errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
                 }
             }
         }

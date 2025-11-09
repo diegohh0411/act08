@@ -9,29 +9,35 @@ import Foundation
 
 enum ApiError: Error {
     case invalidURL
+    case networkError(String)
     case badRequest(String)
     case unprocessableEntity(String)
     case requestError(String)
     case decodingError(String)
     case encodingError(String)
+    case serverError(String)
     case unknownError
 
     var localizedDescription: String {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            return "The server URL is invalid. Please check your configuration."
+        case .networkError(let message):
+            return "Network error: \(message). Please check your internet connection."
         case .badRequest(let message):
-            return "Bad Request: \(message)"
+            return "Bad request: \(message)"
         case .unprocessableEntity(let message):
-            return "Unprocessable Entity: \(message)"
+            return "Validation error: \(message)"
         case .requestError(let message):
-            return "Request Error: \(message)"
+            return "Request failed: \(message)"
         case .decodingError(let message):
-            return "Decoding Error: \(message)"
+            return "Failed to process server response: \(message)"
         case .encodingError(let message):
-            return "Encoding Error: \(message)"
+            return "Failed to prepare request: \(message)"
+        case .serverError(let message):
+            return "Server error: \(message)"
         case .unknownError:
-            return "Unknown Error"
+            return "An unexpected error occurred. Please try again."
         }
     }
 }
@@ -88,10 +94,26 @@ class ContentRepository {
             throw ApiError.encodingError(error.localizedDescription)
         }
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch let error as URLError {
+            switch error.code {
+            case .notConnectedToInternet:
+                throw ApiError.networkError("No internet connection")
+            case .cannotConnectToHost, .cannotFindHost:
+                throw ApiError.networkError("Cannot connect to server. Make sure the server is running.")
+            case .timedOut:
+                throw ApiError.networkError("Request timed out")
+            default:
+                throw ApiError.networkError(error.localizedDescription)
+            }
+        } catch {
+            throw ApiError.networkError(error.localizedDescription)
+        }
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw ApiError.requestError("Invalid response")
+            throw ApiError.requestError("Invalid response from server")
         }
 
         switch httpResponse.statusCode {
@@ -103,13 +125,15 @@ class ContentRepository {
                 throw ApiError.decodingError(error.localizedDescription)
             }
         case 400:
-            let errorMessage = String(data: data, encoding: .utf8) ?? "Bad request"
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Invalid data provided"
             throw ApiError.badRequest(errorMessage)
         case 422:
-            let errorMessage = String(data: data, encoding: .utf8) ?? "Unprocessable entity"
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Some fields are invalid or missing"
             throw ApiError.unprocessableEntity(errorMessage)
+        case 500...599:
+            throw ApiError.serverError("The server encountered an error. Please try again later.")
         default:
-            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Unexpected error occurred"
             throw ApiError.requestError("Status \(httpResponse.statusCode): \(errorMessage)")
         }
     }
@@ -130,10 +154,26 @@ class ContentRepository {
             throw ApiError.encodingError(error.localizedDescription)
         }
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch let error as URLError {
+            switch error.code {
+            case .notConnectedToInternet:
+                throw ApiError.networkError("No internet connection")
+            case .cannotConnectToHost, .cannotFindHost:
+                throw ApiError.networkError("Cannot connect to server. Make sure the server is running.")
+            case .timedOut:
+                throw ApiError.networkError("Request timed out")
+            default:
+                throw ApiError.networkError(error.localizedDescription)
+            }
+        } catch {
+            throw ApiError.networkError(error.localizedDescription)
+        }
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw ApiError.requestError("Invalid response")
+            throw ApiError.requestError("Invalid response from server")
         }
 
         switch httpResponse.statusCode {
@@ -145,13 +185,15 @@ class ContentRepository {
                 throw ApiError.decodingError(error.localizedDescription)
             }
         case 400:
-            let errorMessage = String(data: data, encoding: .utf8) ?? "Bad request"
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Invalid data provided"
             throw ApiError.badRequest(errorMessage)
         case 422:
-            let errorMessage = String(data: data, encoding: .utf8) ?? "Unprocessable entity"
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Some fields are invalid or missing"
             throw ApiError.unprocessableEntity(errorMessage)
+        case 500...599:
+            throw ApiError.serverError("The server encountered an error. Please try again later.")
         default:
-            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Unexpected error occurred"
             throw ApiError.requestError("Status \(httpResponse.statusCode): \(errorMessage)")
         }
     }
