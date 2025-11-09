@@ -85,60 +85,72 @@ struct act08Tests {
     }
 
     @Test func testContentViewModelValidation() async throws {
-        let viewModel = ContentViewModel()
+        await MainActor.run {
+            let viewModel = ContentViewModel()
 
-        let result = await viewModel.createContent(
-            name: "",
-            details: "Details",
-            url: "https://example.com",
-            resourceType: .video,
-            transcript: nil,
-            course: 1,
-            level: 1,
-            lection: 1,
-            resource: 1
-        )
+            Task {
+                let result = await viewModel.createContent(
+                    name: "",
+                    details: "Details",
+                    url: "https://example.com",
+                    resourceType: .video,
+                    transcript: nil,
+                    course: 1,
+                    level: 1,
+                    lection: 1,
+                    resource: 1
+                )
 
-        #expect(result == false)
-        #expect(viewModel.errorMessage == "Name is required")
+                #expect(result == false)
+                #expect(viewModel.errorMessage == "Name is required")
+            }
+        }
     }
 
     @Test func testContentViewModelValidationDetails() async throws {
-        let viewModel = ContentViewModel()
+        await MainActor.run {
+            let viewModel = ContentViewModel()
 
-        let result = await viewModel.createContent(
-            name: "Test",
-            details: "   ",
-            url: "https://example.com",
-            resourceType: .video,
-            transcript: nil,
-            course: 1,
-            level: 1,
-            lection: 1,
-            resource: 1
-        )
+            Task {
+                let result = await viewModel.createContent(
+                    name: "Test",
+                    details: "   ",
+                    url: "https://example.com",
+                    resourceType: .video,
+                    transcript: nil,
+                    course: 1,
+                    level: 1,
+                    lection: 1,
+                    resource: 1
+                )
 
-        #expect(result == false)
-        #expect(viewModel.errorMessage == "Details is required")
+                #expect(result == false)
+                #expect(viewModel.errorMessage == "Details is required")
+            }
+        }
     }
 
     @Test func testContentViewModelValidationURL() async throws {
-        let viewModel = ContentViewModel()
+        await MainActor.run {
+            let viewModel = ContentViewModel()
 
-        let result = await viewModel.createContent(
-            name: "Test",
-            details: "Details",
-            url: "",
-            resourceType: .video,
-            transcript: nil,
-            course: 1,
-            level: 1,
-            lection: 1,
-            resource: 1
-        )
+            Task {
+                let result = await viewModel.createContent(
+                    name: "Test",
+                    details: "Details",
+                    url: "",
+                    resourceType: .video,
+                    transcript: nil,
+                    course: 1,
+                    level: 1,
+                    lection: 1,
+                    resource: 1
+                )
 
-        #expect(result == false)
-        #expect(viewModel.errorMessage == "URL is required")
+                #expect(result == false)
+                #expect(viewModel.errorMessage == "URL is required")
+            }
+        }
     }
 
     @Test func testContentSorting() async throws {

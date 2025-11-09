@@ -29,16 +29,18 @@ struct ContentView: View {
             }
             .navigationTitle("Content")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button(action: {
                         showingAddContent = true
                     }) {
                         Image(systemName: "plus")
                     }
                 }
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarLeading) {
                     EditButton()
                 }
+                #endif
             }
             .sheet(isPresented: $showingAddContent) {
                 AddContentView(viewModel: viewModel)
@@ -48,19 +50,17 @@ struct ContentView: View {
                     await viewModel.fetchContents()
                 }
             }
-            .alert(item: $viewModel.errorMessage) { error in
+            .alert(isPresented: .constant(viewModel.errorMessage != nil)) {
                 Alert(
                     title: Text("Error"),
-                    message: Text(error),
-                    dismissButton: .default(Text("OK"))
+                    message: Text(viewModel.errorMessage ?? ""),
+                    dismissButton: .default(Text("OK")) {
+                        viewModel.errorMessage = nil
+                    }
                 )
             }
         }
     }
-}
-
-extension String: Identifiable {
-    public var id: String { self }
 }
 
 struct ContentView_Previews: PreviewProvider {
