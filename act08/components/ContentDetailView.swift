@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct ContentDetailView: View {
     @State var content: Content
@@ -35,6 +38,14 @@ struct ContentDetailView: View {
         )
     }
 
+    private var overlayBackgroundColor: Color {
+#if os(iOS)
+        return Color(.systemBackground)
+#else
+        return Color(nsColor: .windowBackgroundColor)
+#endif
+    }
+
     var body: some View {
         Form {
             contentDetailsSection
@@ -62,10 +73,15 @@ struct ContentDetailView: View {
         }
     }
 
+    @ViewBuilder
     private var urlField: some View {
+        #if os(iOS)
         TextField("URL *", text: $content.url)
             .autocapitalization(.none)
             .keyboardType(.URL)
+        #else
+        TextField("URL *", text: $content.url)
+        #endif
     }
 
     private var resourceTypePicker: some View {
@@ -78,15 +94,21 @@ struct ContentDetailView: View {
 
     private var courseFields: some View {
         Group {
-            TextField("Course *", value: $content.course, format: .number)
-                .keyboardType(.numberPad)
-            TextField("Level *", value: $content.level, format: .number)
-                .keyboardType(.numberPad)
-            TextField("Lection *", value: $content.lection, format: .number)
-                .keyboardType(.numberPad)
-            TextField("Resource *", value: $content.resource, format: .number)
-                .keyboardType(.numberPad)
+            numericField(title: "Course *", value: $content.course)
+            numericField(title: "Level *", value: $content.level)
+            numericField(title: "Lection *", value: $content.lection)
+            numericField(title: "Resource *", value: $content.resource)
         }
+    }
+
+    @ViewBuilder
+    private func numericField(title: String, value: Binding<Int>) -> some View {
+        #if os(iOS)
+        TextField(title, value: value, format: .number)
+            .keyboardType(.numberPad)
+        #else
+        TextField(title, value: value, format: .number)
+        #endif
     }
 
     private var requiredFieldsSection: some View {
@@ -126,7 +148,7 @@ struct ContentDetailView: View {
                         .font(.headline)
                 }
                 .padding(30)
-                .background(Color(uiColor: .systemBackground))
+                .background(overlayBackgroundColor)
                 .cornerRadius(15)
                 .shadow(radius: 10)
             }
